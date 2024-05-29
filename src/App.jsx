@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
+import nodemailer from 'nodemailer';
 
 function App() {
   const [price, setPrice] = useState(0);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState('Bose SoundLink Wireless Around-Ear Headphones');
   const [emailSent, setEmailSent] = useState(false);
+
+  function handleMessageFromPage(o) {
+    if (o.source === window && o.data)
+      switch (o.data.source) {
+        case "react-devtools-bridge":
+          n = !0,
+            e.postMessage(o.data.payload);
+          break;
+        case "react-devtools-backend-manager":
+          {
+            const { source: e, payload: n } = o.data;
+            if (n) {
+              chrome.runtime.sendMessage({
+                source: e,
+                payload: n
+              });
+            }
+            break
+          }
+      }
+  }
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       checkPrice();
-    }, 1 * 60 * 1000); // 1 hour
+    }, 60 * 60 * 1000); // 1 hour
 
     return () => clearInterval(intervalId);
   }, []);
@@ -35,7 +57,7 @@ function App() {
         setTitle(titleText);
         setPrice(convertedPrice);
 
-        if (convertedPrice < 20000 &&!emailSent) {
+        if (convertedPrice < 20000 && !emailSent) {
           sendMail();
           setEmailSent(true);
         }
@@ -47,19 +69,22 @@ function App() {
 
   const sendMail = async () => {
     try {
-      // Replace with your own mail server or mail service API
-      const response = await axios.post('https://your-mail-server.com/send-email', {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        data: {
-          subject: 'Price Fell Down',
-          body: 'Check the amazon link https://www.amazon.in/Bose-SoundLink-Wireless-Around-Ear-Headphones/dp/B0117RGG8E/ref=sr_1_11?qid=1562395272&refinements=p_89%3ABose&s=electronics&sr=1-11',
-          from: 'ender@gmail.com',
-          to: 'eceiver@gmail.com'
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'muhdzidan007@gmail.com',
+          pass: 'zahan2018'
         }
       });
 
+      const mailOptions = {
+        from: 'ender@gmail.com',
+        to: 'eceiver@gmail.com',
+        subject: 'Price Fell Down',
+        text: 'Check the amazon link https://www.amazon.in/Bose-SoundLink-Wireless-Around-Ear-Headphones/dp/B0117RGG8E/ref=sr_1_11?qid=1562395272&refinements=p_89%3ABose&s=electronics&sr=1-11'
+      };
+
+      await transporter.sendMail(mailOptions);
       console.log('Email sent successfully!');
     } catch (error) {
       console.error(error);
